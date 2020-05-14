@@ -1,0 +1,180 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Elemental
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Deployment Options
+        Parameters:
+          - Code
+      - Label:
+          default: Live Stream Source
+        Parameters:
+          - InputType
+          - InputCodec
+          - InputRes
+          - ChannelStart
+      - Label:
+          default: For PUSH Source Types
+        Parameters:
+          - InputCIDR
+      - Label:
+          default: For PULL Source Types
+        Parameters:
+          - PriPullURL
+          - PriPullUser
+          - PriPullPass
+          - SecPullURL
+          - SecPullUser
+          - SecPullPass
+      - Label:
+          default: MediaConnect Source Type
+        Parameters:
+          - PriMediaConnectArn
+          - SecMediaConnectArn
+
+    ParameterLabels:
+      InputType:
+        default: Source Input Type
+      InputCodec:
+        default: Source Codec
+      InputRes:
+        default: Encoding Profile
+      InputCIDR:
+        default: Input CIDR Block
+      PriPullURL:
+        default: Primary Source URL
+      PriPullUser:
+        default: Primary Source Username
+      PriPullPass:
+        default: Primary Source Password
+      SecPullURL:
+        default: Secondary Source URL
+      SecPullUser:
+        default: Secondary Source Username
+      SecPullPass:
+        default: Secondary Source Password
+      Code:
+        default: Source Code
+      PriMediaConnectArn:
+        default: Primary MediaConnect Arn
+      SecMediaConnectArn:
+        default: Secondary MediaConnect Arn
+      ChannelStart:
+        default: Start MediaLive Channel
+
+Parameters:
+  Code:
+    Description: Select the Code Base to use to deploy the media services.
+    Type: String
+    Default: Nodejs12.x
+    AllowedValues:
+      - Nodejs12.x
+      - Python-3.8
+
+  InputType:
+    Description: Specify the input type for MediaLive (Default parametrs are for the Demo video)
+    Type: String
+    Default: URL_PULL
+    AllowedValues:
+      - RTP_PUSH
+      - RTMP_PUSH
+      - RTMP_PULL
+      - URL_PULL
+      - MEDIACONNECT
+
+  InputCodec:
+    Description: Specify the codec of the source stream for MediaLive (AVC/HEVC/MPEG2)
+    Type: String
+    Default: AVC
+    AllowedValues:
+      - AVC
+      - HEVC
+      - MPEG2
+
+  InputRes:
+    Description: Specify the Encoding Profile to use for MediaLive
+    Type: String
+    Default: 720
+    AllowedValues:
+      - 1080
+      - 720
+      - 540
+
+  InputCIDR:
+    Description: Specify the CIDR Block for the MediaLive SecurityGroup
+    Type: String
+    Default: 0.0.0.0/0
+
+  PriPullURL:
+    Description: Specify the primary source URL for the PULL input stream
+    Type: String
+    Default: "https://d15an60oaeed9r.cloudfront.net/live_stream_v2/sports_reel_with_markers.m3u8"
+
+  PriPullUser:
+    Description: (Optional) Specify a Username for the primary source URL
+    Type: String
+    Default: ""
+
+  PriPullPass:
+    Description: (Optional) Specify a Password for the primary source URL
+    Type: String
+    Default: ""
+    NoEcho: true
+
+  SecPullURL:
+    Description: Specify the secondary source URL for the PULL input stream
+    Type: String
+    Default: "https://d3h5srgm8b0t83.cloudfront.net/live_stream_v2/sports_reel_with_markers.m3u8"
+
+  SecPullUser:
+    Description: (Optional) Specify a Username for the secondary source URL
+    Type: String
+    Default: ""
+
+  SecPullPass:
+    Description: (Optional) Specify a Username for the secondary source URL
+    Type: String
+    Default: ""
+    NoEcho: true
+
+  PriMediaConnectArn:
+    Description: (Optional) Specify the Arn for MediaConnect as a source
+    Type: String
+    Default: ""
+
+  SecMediaConnectArn:
+    Description: (Optional) Specify the Arn for MediaConnect as a source
+    Type: String
+    Default: ""
+
+  ChannelStart:
+    Description: Start the Live Channel as part of the deployment
+    Type: String
+    Default: Yes
+    AllowedValues:
+      - Yes
+      - No
+
+Resources:
+  LiveStreamingStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/solutions-reference/live-streaming-on-aws/latest/live-streaming-on-aws.template
+      TimeoutInMinutes: 30
+      Parameters:
+        Code: !Ref Code
+        InputType: !Ref InputType
+        InputCodec: !Ref InputCodec
+        InputRes: !Ref InputRes
+        InputCIDR: !Ref InputCIDR
+        PriPullURL: !Ref PriPullURL
+        PriPullUser: !Ref PriPullUser
+        PriPullPass: !Ref PriPullPass
+        SecPullURL: !Ref SecPullURL
+        SecPullUser: !Ref SecPullUser
+        SecPullPass: !Ref SecPullPass
+        PriMediaConnectArn: !Ref PriMediaConnectArn
+        SecMediaConnectArn: !Ref SecMediaConnectArn
+        ChannelStart: !Ref ChannelStart
