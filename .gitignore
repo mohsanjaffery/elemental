@@ -1,2 +1,9 @@
 /.env
 /cfn/packaged.template
+
+# Ignore all the libraries installed via pip
+cfn/cr-media-connect/*
+
+# But include the Lambda code
+!cfn/cr-media-connect/connect.py
+!cfn/cr-media-connect/requirements.txt

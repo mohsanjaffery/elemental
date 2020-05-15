@@ -5,6 +5,9 @@ set -e
 # Import configuration
 . ./.env
 
+# Install Lambda dependencies
+pip install -r cfn/cr-media-connect/requirements.txt --target cfn/cr-media-connect -U
+
 printf "\n--> Packaging and uploading templates to the %s S3 bucket ...\n" $BUCKET_NAME
 
 aws cloudformation package \

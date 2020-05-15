@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: CloudFormation Custom Resource for creating AWS Elemental MediaConnect.
+
+Resources:
+  MediaConnectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: cr-media-connect/
+      Handler: connect.handler
+      Runtime: python3.7
+      Timeout: 20
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: 'arn:aws:logs:*:*:*'
+            - Effect: Allow
+              Action:
+                - mediaconnect:*
+              Resource: '*'
+
+  MediaConnectCustom:
+    Type: 'Custom::MediaConnect'
+    Version: '1.0'
+    Properties:
+      ServiceToken: !GetAtt MediaConnectFunction.Arn
+
+Outputs:
+  MediaConnectFunctionArn:
+    Description: "ARN for AWS Elemental MediaConnect custom resource function"
+    Value: !GetAtt MediaConnectFunction.Arn

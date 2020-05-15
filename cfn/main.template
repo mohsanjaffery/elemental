@@ -178,3 +178,9 @@ Resources:
         PriMediaConnectArn: !Ref PriMediaConnectArn
         SecMediaConnectArn: !Ref SecMediaConnectArn
         ChannelStart: !Ref ChannelStart
+
+  MediaConnectStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: media-connect.template
+      TimeoutInMinutes: 20
