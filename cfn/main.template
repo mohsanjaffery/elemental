@@ -157,6 +157,20 @@ Parameters:
       - Yes
       - No
 
+  MediaConnectSourceProtocol:
+    Type: String
+    AllowedValues:
+      - zixi-push
+      - rtp-fec
+      - rtp
+      - zixi-pull
+      - rist
+    Default: rtp-fec
+
+  MediaConnectSourceInboundPort:
+    Type: String
+    Default: 1024
+
 Resources:
   LiveStreamingStack:
     Type: AWS::CloudFormation::Stack
@@ -184,3 +198,7 @@ Resources:
     Properties:
       TemplateURL: media-connect.template
       TimeoutInMinutes: 20
+      Parameters:
+        SourceProtocol: !Ref MediaConnectSourceProtocol
+        SourceWhitelistCidr: !Ref InputCIDR
+        SourceInboundPort: !Ref MediaConnectSourceInboundPort

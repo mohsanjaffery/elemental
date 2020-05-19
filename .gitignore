@@ -5,5 +5,5 @@
 cfn/cr-media-connect/*
 
 # But include the Lambda code
-!cfn/cr-media-connect/connect.py
+!cfn/cr-media-connect/media_connect.py
 !cfn/cr-media-connect/requirements.txt
