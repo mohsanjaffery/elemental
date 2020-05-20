@@ -13,51 +13,56 @@ client = boto3.client('mediaconnect')
 def create(event, context):
     logger.info("Got Create")
 
-    flow_arn = ''
     flow_status = ''
-
-    flow_name, source_name, source_protocol, source_whitelist_cidr, source_inbound_port = _get_resource_properties(
+    flow_name, source_name, source_protocol, source_whitelist_cidr, source_inbound_port, output_name, output_protocol, output_destination, output_port = _get_resource_properties(
         event)
 
-    _create_flow(flow_name, source_name, source_protocol, source_whitelist_cidr, source_inbound_port)
+    _create_flow(flow_name, source_name, source_protocol, source_whitelist_cidr, source_inbound_port, output_name,
+                 output_protocol, output_destination, output_port)
 
     while flow_status != 'STANDBY':
-        response_list_flows = client.list_flows()
-
-        for flow in response_list_flows['Flows']:
-            if flow['Name'] == flow_name:
-                flow_arn = flow['FlowArn']
-                flow_status = flow['Status']
-
+        flow_arn, flow_status = _list_flow_arn_and_status(flow_name)
         if flow_status == 'STANDBY':
-            response_start_flow = client.start_flow(
-                FlowArn=flow_arn
-            )
-            logger.info(response_start_flow)
+            _start_flow(flow_arn)
         else:
-            time.sleep(3)
+            time.sleep(5)
+
+    return helper.PhysicalResourceId
 
 
 @helper.update
 def update(event, context):
     logger.info("Got Update")
 
-    flow_name, source_name, source_protocol, source_whitelist_cidr, source_inbound_port = _get_resource_properties(
+    flow_name, source_name, source_protocol, source_whitelist_cidr, source_inbound_port, output_name, output_protocol, output_destination, output_port = _get_resource_properties(
         event)
 
-    _delete(flow_name)
+    flow_arn, flow_status = _list_flow_arn_and_status(flow_name)
 
-    return _create_flow(flow_name, source_name, source_protocol, source_whitelist_cidr, source_inbound_port)
+    output_arn, source_arn = _get_source_and_outputs_arn(flow_arn)
+
+    _update_flow_source(flow_arn, source_inbound_port, source_protocol, source_arn, source_whitelist_cidr)
+
+    _update_flow_output(flow_arn, output_arn, output_protocol, output_destination, output_port)
 
 
 @helper.delete
 def delete(event, context):
     logger.info("Got Delete")
 
-    flow_name, source_name, source_protocol, source_whitelist_cidr, source_inbound_port = _get_resource_properties(
+    flow_status = ''
+    flow_name, source_name, source_protocol, source_whitelist_cidr, source_inbound_port, output_name, output_protocol, output_destination, output_port = _get_resource_properties(
         event)
 
-    return _delete(flow_name)
+    while flow_status != 'STANDBY':
+        flow_arn, flow_status = _list_flow_arn_and_status(flow_name)
+        if flow_status == 'STANDBY':
+            _delete_flow(flow_arn)
+        elif flow_status == 'ACTIVE':
+            _stop_flow(flow_arn)
+            time.sleep(5)
+        else:
+            time.sleep(5)
 
 
 def handler(event, context):
@@ -72,43 +77,26 @@ def _get_resource_properties(event):
     source_protocol = properties.get('SourceProtocol')
     source_whitelist_cidr = properties.get('SourceWhitelistCidr')
     source_inbound_port = properties.get('SourceInboundPort')
+    output_name = properties.get('OutputName')
+    output_protocol = properties.get('OutputProtocol')
+    output_destination = properties.get('OutputDestination')
+    output_port = properties.get('OutputPort')
 
-    return flow_name, source_name, source_protocol, source_whitelist_cidr, source_inbound_port
+    return flow_name, source_name, source_protocol, source_whitelist_cidr, source_inbound_port, output_name, output_protocol, output_destination, output_port
 
 
-def _create_flow(flow_name, source_name, source_protocol, source_whitelist_cidr, source_inbound_port):
+def _create_flow(flow_name, source_name, source_protocol, source_whitelist_cidr, source_inbound_port, output_name,
+                 output_protocol, output_destination, output_port):
     client.create_flow(
         Name=flow_name,
-        # Outputs=[
-        #     {
-        #         'CidrAllowList': [
-        #             'string',
-        #         ],
-        #         'Description': 'string',
-        #         'Destination': 'string',
-        #         'Encryption': {
-        #             'Algorithm': 'aes128'|'aes192'|'aes256',
-        #             'ConstantInitializationVector': 'string',
-        #             'DeviceId': 'string',
-        #             'KeyType': 'speke'|'static-key',
-        #             'Region': 'string',
-        #             'ResourceId': 'string',
-        #             'RoleArn': 'string',
-        #             'SecretArn': 'string',
-        #             'Url': 'string'
-        #         },
-        #         'MaxLatency': 123,
-        #         'Name': 'string',
-        #         'Port': 123,
-        #         'Protocol': 'zixi-push'|'rtp-fec'|'rtp'|'zixi-pull'|'rist',
-        #         'RemoteId': 'string',
-        #         'SmoothingLatency': 123,
-        #         'StreamId': 'string',
-        #         'VpcInterfaceAttachment': {
-        #             'VpcInterfaceName': 'string'
-        #         }
-        #     },
-        # ],
+        Outputs=[
+            {
+                'Name': output_name,
+                'Destination': output_destination,
+                'Port': int(output_port),
+                'Protocol': output_protocol,
+            }
+        ],
         Source={
             'IngestPort': int(source_inbound_port),
             'Name': source_name,
@@ -118,27 +106,70 @@ def _create_flow(flow_name, source_name, source_protocol, source_whitelist_cidr,
     )
 
 
-def _delete(flow_name):
+def _delete_flow(flow_arn):
+    client.delete_flow(
+        FlowArn=flow_arn
+    )
+
+
+def _get_source_and_outputs_arn(flow_arn):
+    output_arn = ''
+    source_arn = ''
+
+    response_describe_flow = client.describe_flow(
+        FlowArn=flow_arn
+    )
+
+    for output in response_describe_flow['Flow']['Outputs']:
+        output_arn = output['OutputArn']
+
+    for source in response_describe_flow['Flow']['Sources']:
+        source_arn = source['SourceArn']
+
+    return output_arn, source_arn
+
+
+def _list_flow_arn_and_status(flow_name):
     flow_arn = ''
     flow_status = ''
 
-    while flow_status != 'STANDBY':
-        response_list_flows = client.list_flows()
+    response_list_flows = client.list_flows()
 
-        for flow in response_list_flows['Flows']:
-            if flow['Name'] == flow_name:
-                flow_arn = flow['FlowArn']
-                flow_status = flow['Status']
+    for flow in response_list_flows['Flows']:
+        if flow['Name'] == flow_name:
+            flow_arn = flow['FlowArn']
+            flow_status = flow['Status']
 
-        if flow_status == 'STANDBY':
-            response_delete_flow = client.delete_flow(
-                FlowArn=flow_arn
-            )
-            logger.info(response_delete_flow)
+    return flow_arn, flow_status
 
-        elif flow_status == 'ACTIVE':
-            client.stop_flow(
-                FlowArn=flow_arn
-            )
-        else:
-            time.sleep(3)
+
+def _start_flow(flow_arn):
+    client.start_flow(
+        FlowArn=flow_arn
+    )
+
+
+def _stop_flow(flow_arn):
+    client.stop_flow(
+        FlowArn=flow_arn
+    )
+
+
+def _update_flow_output(flow_arn, output_arn, output_protocol, output_destination, output_port):
+    client.update_flow_output(
+        Destination=output_destination,
+        FlowArn=flow_arn,
+        OutputArn=output_arn,
+        Port=int(output_port),
+        Protocol=output_protocol
+    )
+
+
+def _update_flow_source(flow_arn, source_inbound_port, source_protocol, source_arn, source_whitelist_cidr):
+    client.update_flow_source(
+        FlowArn=flow_arn,
+        IngestPort=int(source_inbound_port),
+        Protocol=source_protocol,
+        SourceArn=source_arn,
+        WhitelistCidr=source_whitelist_cidr
+    )

@@ -12,6 +12,15 @@ Parameters:
   SourceInboundPort:
     Type: String
 
+  OutputProtocol:
+    Type: String
+
+  OutputDestination:
+    Type: String
+
+  OutputPort:
+    Type: String
+
 Resources:
   MediaConnectFunction:
     Type: AWS::Serverless::Function
@@ -25,7 +34,8 @@ Resources:
           Statement:
             - Effect: Allow
               Action:
-                - '*' #TODO: reduce permissions
+                - mediaconnect:*
+                - iam:PassRole
               Resource: '*'
 
   MediaConnectCustom:
@@ -38,8 +48,15 @@ Resources:
       SourceProtocol: !Ref SourceProtocol
       SourceWhitelistCidr: !Ref SourceWhitelistCidr
       SourceInboundPort: !Ref SourceInboundPort
+      OutputName: !Sub ${AWS::StackName}-Output
+      OutputProtocol: !Ref OutputProtocol
+      OutputDestination: !Ref OutputDestination
+      OutputPort: !Ref OutputPort
 
 Outputs:
   MediaConnectFunctionArn:
     Description: "ARN for AWS Elemental MediaConnect custom resource function"
     Value: !GetAtt MediaConnectFunction.Arn
+
+  MediaConnectCustomArn:
+    Value: !Ref MediaConnectCustom

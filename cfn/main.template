@@ -160,16 +160,34 @@ Parameters:
   MediaConnectSourceProtocol:
     Type: String
     AllowedValues:
-      - zixi-push
       - rtp-fec
       - rtp
-      - zixi-pull
       - rist
+      - zixi-push
+      - zixi-pull
     Default: rtp-fec
 
   MediaConnectSourceInboundPort:
     Type: String
-    Default: 1024
+    Default: 12345
+
+  MediaConnectOutputProtocol:
+    Type: String
+    AllowedValues:
+      - rtp-fec
+      - rtp
+      - rist
+      - zixi-push
+      - zixi-pull
+    Default: zixi-push
+
+  MediaConnectOutputDestination:
+    Type: String
+    Default: 192.0.2.0
+
+  MediaConnectOutputPort:
+    Type: String
+    Default: 12345
 
 Resources:
   LiveStreamingStack:
@@ -202,3 +220,6 @@ Resources:
         SourceProtocol: !Ref MediaConnectSourceProtocol
         SourceWhitelistCidr: !Ref InputCIDR
         SourceInboundPort: !Ref MediaConnectSourceInboundPort
+        OutputProtocol: !Ref MediaConnectOutputProtocol
+        OutputDestination: !Ref MediaConnectOutputDestination
+        OutputPort: !Ref MediaConnectOutputPort
