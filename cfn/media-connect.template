@@ -5,19 +5,14 @@ Description: CloudFormation Custom Resource for creating AWS Elemental MediaConn
 Parameters:
   SourceProtocol:
     Type: String
-
   SourceWhitelistCidr:
     Type: String
-
   SourceInboundPort:
     Type: String
-
   OutputProtocol:
     Type: String
-
   OutputDestination:
     Type: String
-
   OutputPort:
     Type: String
 
@@ -62,3 +57,6 @@ Outputs:
   MediaConnectFunctionArn:
     Description: "ARN for AWS Elemental MediaConnect custom resource function"
     Value: !GetAtt MediaConnectFunction.Arn
+
+  MediaConnectFlowName:
+    Value: !Sub ${AWS::StackName}-Flow

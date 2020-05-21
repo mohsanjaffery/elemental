@@ -28,11 +28,6 @@ Metadata:
           - SecPullURL
           - SecPullUser
           - SecPullPass
-      - Label:
-          default: MediaConnect Source Type
-        Parameters:
-          - PriMediaConnectArn
-          - SecMediaConnectArn
 
     ParameterLabels:
       InputType:
@@ -57,10 +52,6 @@ Metadata:
         default: Secondary Source Password
       Code:
         default: Source Code
-      PriMediaConnectArn:
-        default: Primary MediaConnect Arn
-      SecMediaConnectArn:
-        default: Secondary MediaConnect Arn
       ChannelStart:
         default: Start MediaLive Channel
 
@@ -72,7 +63,6 @@ Parameters:
     AllowedValues:
       - Nodejs12.x
       - Python-3.8
-
   InputType:
     Description: Specify the input type for MediaLive (Default parametrs are for the Demo video)
     Type: String
@@ -83,7 +73,6 @@ Parameters:
       - RTMP_PULL
       - URL_PULL
       - MEDIACONNECT
-
   InputCodec:
     Description: Specify the codec of the source stream for MediaLive (AVC/HEVC/MPEG2)
     Type: String
@@ -92,7 +81,6 @@ Parameters:
       - AVC
       - HEVC
       - MPEG2
-
   InputRes:
     Description: Specify the Encoding Profile to use for MediaLive
     Type: String
@@ -101,54 +89,36 @@ Parameters:
       - 1080
       - 720
       - 540
-
   InputCIDR:
     Description: Specify the CIDR Block for the MediaLive SecurityGroup
     Type: String
     Default: 0.0.0.0/0
-
   PriPullURL:
     Description: Specify the primary source URL for the PULL input stream
     Type: String
     Default: "https://d15an60oaeed9r.cloudfront.net/live_stream_v2/sports_reel_with_markers.m3u8"
-
   PriPullUser:
     Description: (Optional) Specify a Username for the primary source URL
     Type: String
     Default: ""
-
   PriPullPass:
     Description: (Optional) Specify a Password for the primary source URL
     Type: String
     Default: ""
     NoEcho: true
-
   SecPullURL:
     Description: Specify the secondary source URL for the PULL input stream
     Type: String
     Default: "https://d3h5srgm8b0t83.cloudfront.net/live_stream_v2/sports_reel_with_markers.m3u8"
-
   SecPullUser:
     Description: (Optional) Specify a Username for the secondary source URL
     Type: String
     Default: ""
-
   SecPullPass:
     Description: (Optional) Specify a Username for the secondary source URL
     Type: String
     Default: ""
     NoEcho: true
-
-  PriMediaConnectArn:
-    Description: (Optional) Specify the Arn for MediaConnect as a source
-    Type: String
-    Default: ""
-
-  SecMediaConnectArn:
-    Description: (Optional) Specify the Arn for MediaConnect as a source
-    Type: String
-    Default: ""
-
   ChannelStart:
     Description: Start the Live Channel as part of the deployment
     Type: String
@@ -156,7 +126,6 @@ Parameters:
     AllowedValues:
       - Yes
       - No
-
   MediaConnectSourceProtocol:
     Type: String
     AllowedValues:
@@ -166,11 +135,9 @@ Parameters:
       - zixi-push
       - zixi-pull
     Default: rtp-fec
-
   MediaConnectSourceInboundPort:
     Type: String
     Default: 12345
-
   MediaConnectOutputProtocol:
     Type: String
     AllowedValues:
@@ -180,11 +147,9 @@ Parameters:
       - zixi-push
       - zixi-pull
     Default: zixi-push
-
   MediaConnectOutputDestination:
     Type: String
     Default: 192.0.2.0
-
   MediaConnectOutputPort:
     Type: String
     Default: 12345
@@ -207,8 +172,9 @@ Resources:
         SecPullURL: !Ref SecPullURL
         SecPullUser: !Ref SecPullUser
         SecPullPass: !Ref SecPullPass
-        PriMediaConnectArn: !Ref PriMediaConnectArn
-        SecMediaConnectArn: !Ref SecMediaConnectArn
+        PriMediaConnectArn: !Sub
+          - '{{resolve:ssm:${MediaConnectStack}:1}}'
+          - MediaConnectStack: !GetAtt MediaConnectStack.Outputs.MediaConnectFlowName
         ChannelStart: !Ref ChannelStart
 
   MediaConnectStack:
