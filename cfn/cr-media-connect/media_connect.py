@@ -6,7 +6,8 @@ from crhelper import CfnResource
 
 logger = logging.getLogger(__name__)
 helper = CfnResource(json_logging=False, log_level='DEBUG', boto_level='CRITICAL')
-client = boto3.client('mediaconnect')
+mediaconnect = boto3.client('mediaconnect')
+ssm = boto3.client('ssm')
 
 
 @helper.create
@@ -14,6 +15,7 @@ def create(event, context):
     logger.info("Got Create")
 
     flow_status = ''
+    flow_arn = ''
     flow_name, source_name, source_protocol, source_whitelist_cidr, source_inbound_port, output_name, output_protocol, output_destination, output_port = _get_resource_properties(
         event)
 
@@ -26,6 +28,8 @@ def create(event, context):
             _start_flow(flow_arn)
         else:
             time.sleep(5)
+
+    _put_parameter(flow_name, flow_arn)
 
     return helper.PhysicalResourceId
 
@@ -58,6 +62,7 @@ def delete(event, context):
         flow_arn, flow_status = _list_flow_arn_and_status(flow_name)
         if flow_status == 'STANDBY':
             _delete_flow(flow_arn)
+            _delete_parameter(flow_name)
         elif flow_status == 'ACTIVE':
             _stop_flow(flow_arn)
             time.sleep(5)
@@ -87,7 +92,7 @@ def _get_resource_properties(event):
 
 def _create_flow(flow_name, source_name, source_protocol, source_whitelist_cidr, source_inbound_port, output_name,
                  output_protocol, output_destination, output_port):
-    client.create_flow(
+    mediaconnect.create_flow(
         Name=flow_name,
         Outputs=[
             {
@@ -107,7 +112,7 @@ def _create_flow(flow_name, source_name, source_protocol, source_whitelist_cidr,
 
 
 def _delete_flow(flow_arn):
-    client.delete_flow(
+    mediaconnect.delete_flow(
         FlowArn=flow_arn
     )
 
@@ -116,7 +121,7 @@ def _get_source_and_outputs_arn(flow_arn):
     output_arn = ''
     source_arn = ''
 
-    response_describe_flow = client.describe_flow(
+    response_describe_flow = mediaconnect.describe_flow(
         FlowArn=flow_arn
     )
 
@@ -133,7 +138,7 @@ def _list_flow_arn_and_status(flow_name):
     flow_arn = ''
     flow_status = ''
 
-    response_list_flows = client.list_flows()
+    response_list_flows = mediaconnect.list_flows()
 
     for flow in response_list_flows['Flows']:
         if flow['Name'] == flow_name:
@@ -144,19 +149,19 @@ def _list_flow_arn_and_status(flow_name):
 
 
 def _start_flow(flow_arn):
-    client.start_flow(
+    mediaconnect.start_flow(
         FlowArn=flow_arn
     )
 
 
 def _stop_flow(flow_arn):
-    client.stop_flow(
+    mediaconnect.stop_flow(
         FlowArn=flow_arn
     )
 
 
 def _update_flow_output(flow_arn, output_arn, output_protocol, output_destination, output_port):
-    client.update_flow_output(
+    mediaconnect.update_flow_output(
         Destination=output_destination,
         FlowArn=flow_arn,
         OutputArn=output_arn,
@@ -166,10 +171,25 @@ def _update_flow_output(flow_arn, output_arn, output_protocol, output_destinatio
 
 
 def _update_flow_source(flow_arn, source_inbound_port, source_protocol, source_arn, source_whitelist_cidr):
-    client.update_flow_source(
+    mediaconnect.update_flow_source(
         FlowArn=flow_arn,
         IngestPort=int(source_inbound_port),
         Protocol=source_protocol,
         SourceArn=source_arn,
         WhitelistCidr=source_whitelist_cidr
+    )
+
+
+def _put_parameter(flow_name, flow_arn):
+    ssm.put_parameter(
+        Name=flow_name,
+        Description='MediaConnect Flow ARN',
+        Value=flow_arn,
+        Type='String'
+    )
+
+
+def _delete_parameter(flow_name):
+    ssm.delete_parameter(
+        Name=flow_name
     )

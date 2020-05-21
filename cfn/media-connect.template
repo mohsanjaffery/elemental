@@ -34,8 +34,13 @@ Resources:
           Statement:
             - Effect: Allow
               Action:
-                - mediaconnect:*
                 - iam:PassRole
+                - mediaconnect:*
+                - ssm:DescribeParameters
+                - ssm:GetParameter
+                - ssm:GetParameters
+                - ssm:PutParameter
+                - ssm:DeleteParameter
               Resource: '*'
 
   MediaConnectCustom:
@@ -57,6 +62,3 @@ Outputs:
   MediaConnectFunctionArn:
     Description: "ARN for AWS Elemental MediaConnect custom resource function"
     Value: !GetAtt MediaConnectFunction.Arn
-
-  MediaConnectCustomArn:
-    Value: !Ref MediaConnectCustom
