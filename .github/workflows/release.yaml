@@ -22,8 +22,8 @@ jobs:
           role-to-assume: ${{ secrets.AWS_PUBLISHER_ROLE_TO_ASSUME }}
           role-duration-seconds: 600
       # Testing Creds
-      - name: TestingAWS
-        run: aws s3 ls
+      # - name: TestingAWS
+      #   run: aws s3 ls
       # Setup
       # - name: Set up Python 3.7
       #   uses: actions/setup-python@v1
