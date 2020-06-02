@@ -1,3 +1,0 @@
-[submodule "live-stream-on-aws"]
-	path = live-stream-on-aws
-	url = https://github.com/awslabs/live-stream-on-aws.git
