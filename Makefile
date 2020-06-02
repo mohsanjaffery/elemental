@@ -1,9 +1,9 @@
 HELL := /bin/bash
   
-.PHONY : deploy deploy-containers pre-deploy setup test test-cov test-acceptance test-acceptance-cov test-no-state-machine test-no-state-machine-cov test-unit test-unit-cov
+#.PHONY : deploy deploy-containers pre-deploy setup test test-cov test-acceptance test-acceptance-cov test-no-state-machine test-no-state-machine-cov test-unit test-unit-cov
 
 # The name of the virtualenv directory to use
-VENV ?= venv
+#VENV ?= venv
 
 pre-deploy:
 ifndef TEMP_BUCKET
@@ -25,6 +25,7 @@ ifndef ROLE_NAME
 endif
 
 setup-predeploy:
-	virtualenv venv
-	source venv/bin/activate
+	virtualenv venv && \
+	source venv/bin/activate && \
+	pip install --upgrade pip && \
 	pip install cfn-flip==1.2.2
