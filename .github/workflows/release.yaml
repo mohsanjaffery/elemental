@@ -1,0 +1,35 @@
+---
+  
+name: Release Version
+on:
+  push:
+    branches:
+      - master
+jobs:
+  release:
+    name: Release Version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: git fetch --depth=1 origin +refs/tags/*:refs/tags/* || true
+      # Set AWS Credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.REGION }}
+          role-to-assume: ${{ secrets.AWS_PUBLISHER_ROLE_TO_ASSUME }}
+          role-duration-seconds: 900
+      # Setup
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - name: Install virtualenv
+        run: pip install virtualenv
+      - name: Install dependencies
+        run: make setup-predeploy
+      - name: Test Credentials
+        run: aws s3 ls
+
