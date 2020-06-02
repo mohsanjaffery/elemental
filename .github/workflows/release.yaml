@@ -30,6 +30,3 @@ jobs:
         run: pip install virtualenv
       - name: Install dependencies
         run: make setup-predeploy
-      - name: Test Credentials
-        run: aws s3 ls
-
