@@ -31,8 +31,10 @@ setup-predeploy:
 	pip install cfn-flip==1.2.2
 
 build-custom-py:
-	mkdir live-stream-on-aws/build/ ; \
-        cd live-stream-on-aws/source/custom-resource-py/ ; \
+	make clean
+	cd live-stream-on-aws/source/custom-resource-py/ ; \
         pip install -r ./requirements.txt -t . ; \
         zip -q -r9 ../../custom-resource-py.zip *
 
+clean:
+	xargs rm -rf < ci/include.lst
