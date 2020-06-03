@@ -1,7 +1,3 @@
-#!make
-include envfile
-export $(shell sed 's/=.*//' envfile)
-
 SHELL := /bin/bash
   
 #.PHONY : deploy deploy-containers pre-deploy setup test test-cov test-acceptance test-acceptance-cov test-no-state-machine test-no-state-machine-cov test-unit test-unit-cov
@@ -16,10 +12,8 @@ endif
 ifndef STACK_NAME
 	$(error STACK_NAME is undefined)
 endif
-
-pre-run:
-ifndef ROLE_NAME
-	$(error ROLE_NAME is undefined)
+ifndef REGION
+	$(error REGION is undefined)
 endif
 
 setup-predeploy:
@@ -36,8 +30,8 @@ build-custom-py:
         zip -q -r9 custom-resource-py.zip *
 
 deploy-cfn:
-	aws --region us-east-1 cloudformation package --template-file live-stream-on-aws/deployment/live-streaming-on-aws.yaml --s3-bucket $(TEMP_BUCKET) --output-template-file packaged.template
-	aws --region us-east-1 cloudformation deploy --template-file packaged.template --stack-name $(STACK_NAME) --capabilities CAPABILITY_IAM
+	aws --region $(REGION) cloudformation package --template-file live-stream-on-aws/deployment/live-streaming-on-aws.yaml --s3-bucket $(TEMP_BUCKET) --output-template-file packaged.template
+	aws --region $(REGION) cloudformation deploy --template-file packaged.template --stack-name $(STACK_NAME) --capabilities CAPABILITY_IAM
 
 deploy:
 	make pre-deploy
