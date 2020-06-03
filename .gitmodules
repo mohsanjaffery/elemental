@@ -1,6 +1,0 @@
-[submodule "live-stream-on-aws"]
-	path = live-stream-on-aws
-	url = https://github.com/mohsanjaffery/live-stream-on-aws.git
-[submodule "amazon-cloudfront-access-logs-queries"]
-	path = amazon-cloudfront-access-logs-queries
-	url = https://github.com/mohsanjaffery/amazon-cloudfront-access-logs-queries.git
