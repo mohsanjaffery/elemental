@@ -1,4 +1,8 @@
-HELL := /bin/bash
+#!make
+include envfile
+export $(shell sed 's/=.*//' envfile)
+
+SHELL := /bin/bash
   
 #.PHONY : deploy deploy-containers pre-deploy setup test test-cov test-acceptance test-acceptance-cov test-no-state-machine test-no-state-machine-cov test-unit test-unit-cov
 
@@ -9,14 +13,8 @@ pre-deploy:
 ifndef TEMP_BUCKET
 	$(error TEMP_BUCKET is undefined)
 endif
-ifndef ADMIN_EMAIL
-	$(error ADMIN_EMAIL is undefined)
-endif
-ifndef SUBNETS
-	$(error SUBNETS is undefined)
-endif
-ifndef SEC_GROUPS
-	$(error SEC_GROUPS is undefined)
+ifndef STACK_NAME
+	$(error STACK_NAME is undefined)
 endif
 
 pre-run:
@@ -36,6 +34,15 @@ build-custom-py:
 	cp -pR ../source/custom-resource-py/ . ; \
         pip install -r requirements.txt -t . ; \
         zip -q -r9 custom-resource-py.zip *
+
+deploy-cfn:
+	aws --region us-east-1 cloudformation package --template-file live-stream-on-aws/deployment/live-streaming-on-aws.yaml --s3-bucket $(TEMP_BUCKET) --output-template-file packaged.template
+	aws --region us-east-1 cloudformation deploy --template-file packaged.template --stack-name $(STACK_NAME) --capabilities CAPABILITY_IAM
+
+deploy:
+	make pre-deploy
+	make build-custom-py
+	make deploy-cfn
 
 clean:
 	xargs rm -rf < ci/clean.lst
