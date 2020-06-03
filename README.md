@@ -20,6 +20,48 @@
    ```
    $ ./deploy.sh
    ```
+   
+### Forked Projects
+List or forked projects
+
+```
+https://github.com/mohsanjaffery/live-stream-on-aws.git
+https://github.com/mohsanjaffery/amazon-cloudfront-access-logs-queries.git
+```
+
+Syncing fork from upstream project
+
+```
+git remote add upstream https://github.com/awslabs/live-stream-on-aws.git
+git remote set-url --push pr no_push
+git remote -v
+git fetch upstream
+```
+
+### Submodule Projects
+The above forked projects are submodules of this project
+
+##### Pulling Submodules into a non-initialised repo
+
+```
+$ git submodule init
+$ git pull --recurse-submodules
+```
+##### Pulling Submodules into a previously initialised repo
+
+1. List Submodule folders
+```
+$ git config --file .gitmodules --get-regexp path | awk '{ print $2 }'
+```
+1. Pull from within Submodule folders from output of above command
+```
+$ git pull --recurse-submodules
+```
+
+### Building live-stream-on-aws submodule
+
+```$ make build-custom-py```
+
 
 ## Contributing
 
