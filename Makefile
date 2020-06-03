@@ -32,9 +32,10 @@ setup-predeploy:
 
 build-custom-py:
 	make clean
-	cd live-stream-on-aws/source/custom-resource-py/ ; \
-        pip install -r ./requirements.txt -t . ; \
-        zip -q -r9 ../../custom-resource-py.zip *
+	mkdir live-stream-on-aws/build && cd live-stream-on-aws/build ; \
+	cp -pR ../source/custom-resource-py/ . ; \
+        pip install -r requirements.txt -t . ; \
+        zip -q -r9 custom-resource-py.zip *
 
 clean:
-	xargs rm -rf < ci/include.lst
+	xargs rm -rf < ci/clean.lst
