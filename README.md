@@ -24,12 +24,15 @@
 
 ### Local build - Live Streaming
 
-```bash
-make deploy \
-  REGION=<aws-region> \
-  TEMP_BUCKET=<temp-bucket-name> \
-  STACK_NAME=<stack-name>
+Update `custom.mk` in the root of the project with the following values
+
 ```
+REGION=[AWS_REGION]
+TEMP_BUCKET=[TEMP_BUCKET]
+STACK_NAME=[STACK-NAME]
+```
+
+Run `make deploy` to build and deploy the solution
 
 
 

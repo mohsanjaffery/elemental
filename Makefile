@@ -1,10 +1,12 @@
 SHELL := /bin/bash
-  
+
 #.PHONY : deploy deploy-containers pre-deploy setup test test-cov test-acceptance test-acceptance-cov test-no-state-machine test-no-state-machine-cov test-unit test-unit-cov
 
-# The name of the virtualenv directory to use
-#VENV ?= venv
-
+CUSTOM_FILE ?= custom.mk
+ifneq ("$(wildcard $(CUSTOM_FILE))","")
+	include $(CUSTOM_FILE)
+endif
+  
 pre-deploy:
 ifndef TEMP_BUCKET
 	$(error TEMP_BUCKET is undefined)
@@ -29,14 +31,19 @@ build-custom-py:
         pip install -r requirements.txt -t . ; \
         zip -q -r9 custom-resource-py.zip *
 
-deploy-cfn:
+deploy-cfn-lsoa:
 	aws --region $(REGION) cloudformation package --template-file live-stream-on-aws/deployment/live-streaming-on-aws.yaml --s3-bucket $(TEMP_BUCKET) --output-template-file packaged.template
-	aws --region $(REGION) cloudformation deploy --template-file packaged.template --stack-name $(STACK_NAME) --capabilities CAPABILITY_IAM
+	aws --region $(REGION) cloudformation deploy --template-file packaged.template --stack-name $(STACK_NAME)-lsoa --capabilities CAPABILITY_IAM
+
+deploy-cfn-cfal:
+	aws --region $(REGION) cloudformation package --template-file amazon-cloudfront-access-logs-queries/template.yaml --s3-bucket $(TEMP_BUCKET) --output-template-file packaged-cfal.template
+	aws --region $(REGION) cloudformation deploy --template-file packaged-cfal.template --stack-name $(STACK_NAME)-cfal --capabilities CAPABILITY_IAM
 
 deploy:
 	make pre-deploy
 	make build-custom-py
-	make deploy-cfn
+	make deploy-cfn-lsoa
+	make deploy-cfn-cfal
 
 clean:
 	xargs rm -rf < ci/clean.lst
