@@ -24,13 +24,12 @@
 
 ### Local build - Live Streaming
 
-Update `custom.mk` in the root of the project with the following values
+Create a `.custom_mk` file and populate it with your own values
 
-```
-REGION=[AWS_REGION]
-TEMP_BUCKET=[TEMP_BUCKET]
-STACK_NAME=[STACK-NAME]
-```
+   ```
+   $ cp .custom_mk_sample .custom_mk
+   ```
+
 
 Run `make deploy` to build and deploy the solution
 
