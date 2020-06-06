@@ -20,6 +20,20 @@
    ```
    $ ./deploy.sh
    ```
+   
+
+### Local build - Live Streaming
+
+Create a `.custom_mk` file and populate it with your own values
+
+   ```
+   $ cp .custom_mk_sample .custom_mk
+   ```
+
+
+Run `make deploy` to build and deploy the solution
+
+
 
 ## Contributing
 
