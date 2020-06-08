@@ -27,7 +27,7 @@
 Create a `.custom_mk` file and populate it with your own values
 
    ```
-   $ cp .custom_mk_sample .custom_mk
+   $ cp .custom_mk.example .custom_mk
    ```
 
 

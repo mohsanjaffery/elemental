@@ -1,5 +1,6 @@
 /.env
-/cfn/packaged.template
+/.custom_mk
+/.build
 
 # Ignore all the libraries installed via pip
 cfn/cr-media-connect/*

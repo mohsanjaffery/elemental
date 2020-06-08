@@ -1,1 +1,3 @@
-live-stream-on-aws/build
+./.build
+packaged-lsoa.template
+packaged-cfal.template
