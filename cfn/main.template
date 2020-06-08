@@ -68,10 +68,7 @@ Parameters:
   Code:
     Description: Select the Code Base to use to deploy the media services.
     Type: String
-    Default: Nodejs12.x
-    AllowedValues:
-      - Nodejs12.x
-      - Python-3.8
+    Default: Python-3.8
 
   InputType:
     Description: Specify the input type for MediaLive (Default parametrs are for the Demo video)

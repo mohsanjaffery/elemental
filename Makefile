@@ -100,6 +100,6 @@ clean-lsoa:
 
 # Clean up local build
 clean:
-	make clean-losa
+	make clean-lsoa
 	rm -rf venv
 	find . -iname "*.pyc" -delete
