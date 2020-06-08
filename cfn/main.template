@@ -186,8 +186,16 @@ Parameters:
     Type: String
     Default: 12345
 
+  ResourcePrefix:
+    Type: String
+    Default: livestream
+    ConstraintDescription: '[a-z0-9]+/'
+    MinLength: 1
+    MaxLength: 20
+    Description: Prefix that is used for the created resources (20 chars, a-z and 0-9 only)
+
 Resources:
-  LiveStreamingStack:
+  LiveStreamStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: lsoa.template
@@ -207,6 +215,8 @@ Resources:
         PriMediaConnectArn: !Ref PriMediaConnectArn
         SecMediaConnectArn: !Ref SecMediaConnectArn
         ChannelStart: !Ref ChannelStart
+        LogsBucket: !GetAtt CloudFrontAccessLogs.Outputs.CloudFrontAccessLogsBucket
+        LogsBucketDomainName: !GetAtt CloudFrontAccessLogs.Outputs.CloudFrontAccessLogsBucketDomainName
 
   MediaConnectStack:
     Type: AWS::CloudFormation::Stack
@@ -220,3 +230,11 @@ Resources:
         OutputProtocol: !Ref MediaConnectOutputProtocol
         OutputDestination: !Ref MediaConnectOutputDestination
         OutputPort: !Ref MediaConnectOutputPort
+
+  CloudFrontAccessLogs:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: cfal.template
+      TimeoutInMinutes: 30
+      Parameters:
+        ResourcePrefix: !Ref ResourcePrefix
