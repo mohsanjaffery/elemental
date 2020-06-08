@@ -25,7 +25,7 @@ Resources:
   MediaConnectFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: cr-media-connect/
+      CodeUri: ../source/cr-media-connect
       Handler: media_connect.handler
       Runtime: python3.7
       Timeout: 120

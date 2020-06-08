@@ -1,10 +1,12 @@
-/.env
-/.custom_mk
+/.custom.mk
 /.build
+/venv/
 
 # Ignore all the libraries installed via pip
-cfn/cr-media-connect/*
+source/cr-media-connect/*
 
 # But include the Lambda code
-!cfn/cr-media-connect/media_connect.py
-!cfn/cr-media-connect/requirements.txt
+!source/cr-media-connect/media_connect.py
+!source/cr-media-connect/requirements.txt
+
+/cfn/packaged.template

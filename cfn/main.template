@@ -193,7 +193,7 @@ Resources:
   LiveStreamingStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.amazonaws.com/solutions-reference/live-streaming-on-aws/latest/live-streaming-on-aws.template
+      TemplateURL: lsoa.template
       TimeoutInMinutes: 30
       Parameters:
         Code: !Ref Code

@@ -1,38 +1,57 @@
 # elemental
 
-### Local Deployment
+# Local Development
+
+This section details how to run the solution locally and deploy your code
+changes from the command line.
+
+## Pre-Requisites
+
+The following dependencies must be installed:
+
+- AWS CLI
+- Python >=3.7 and pip
+- virtualenv
+
+Once you have installed all pre-requisites, you must run the following command
+to create a `virtualenv` and install all dependencies before
+commencing development.
+
+```bash
+make init
+```
+
+This command only needs to be ran once.
+
+## Build and Deploy from Source
+
+To deploy the solution manually from the source to your AWS account, run the
+following:
 
 1. Create a S3 bucket
    ```
-   $ BUCKET_NAME=""
-   $ AWS_REGION="us-east-1"
-   $ aws s3 mb s3://${BUCKET_NAME} --region $AWS_REGION
-   ```
-1. Create an `.env` file and populate it with your own values
-   ```
-   $ cp .env.example .env
-   ```
-1. Double check that `deploy.sh` is executable, if not run:
-   ```
-   $ chmod +x deploy.sh
-   ```
-1. Run the deployment script
-   ```
-   $ ./deploy.sh
-   ```
-   
-
-### Local build - Live Streaming
-
-Create a `.custom_mk` file and populate it with your own values
-
-   ```
-   $ cp .custom_mk.example .custom_mk
+   $ BUCKET_NAME="your-s3-bucket-name"
+   $ REGION="us-east-1"
+   $ aws s3 mb s3://${BUCKET_NAME} --region $REGION
    ```
 
+1. Create an `.custom_mk` file and populate it with your own values
+   ```
+   $ cp .custom.mk.example .custom.mk
+   ```
+1. Deploy the stack
+   ```bash
+   make deploy
+   ```
 
-Run `make deploy` to build and deploy the solution
+This will deploy the Elemental Streaming solution using the AWS CLI profile of the current shell. By default this will be the profile `default`.
 
+### Local Deployment
+
+The following commands are also available:
+
+`deploy-lsoa`: This will deploy LiveStreaming on AWS solution only.
+`deploy-cfal`: This will deploy analytics solution only.
 
 
 ## Contributing
