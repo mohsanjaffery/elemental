@@ -35,7 +35,7 @@ following:
    $ aws s3 mb s3://${BUCKET_NAME} --region $REGION
    ```
 
-1. Create an `.custom_mk` file and populate it with your own values
+1. Create an `.custom.mk` file and populate it with your own values
    ```
    $ cp .custom.mk.example .custom.mk
    ```
@@ -50,9 +50,9 @@ This will deploy the Elemental Streaming solution using the AWS CLI profile of t
 
 The following commands are also available:
 
-`deploy-lsoa`: This will deploy LiveStreaming on AWS solution only.
-`deploy-cfal`: This will deploy analytics solution only.
+`deploy-lsoa` This will deploy LiveStreaming on AWS solution only.
 
+`deploy-cfal` This will deploy analytics solution only.
 
 ## Contributing
 
@@ -61,3 +61,6 @@ Contributions are more than welcome. Please read the [contributing guidelines](C
 ## Limitations
 
 Lambda functions are hitting allowed limit of 64 characters. To resolve this, use stack name as short as possible. Tested with 3 characters `elm`.
+
+`CloudFrontAccessLogsBucket` bucket used for CloudFront logs has hardcoded value, this helps resolve circular dependency between `TransformPartFn` function and `CloudFrontAccessLogsBucket` resource. However, this can cause failures when trying to deploy solution repeatably in the same account.
+Resolution: [TODO] add ${AWS::StackID} pseudo parameter to the name.

@@ -163,6 +163,7 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
+      BucketName: !Sub "${ResourcePrefix}-${AWS::AccountId}-cf-access-logs" #TODO: hardcoded s3 bucket name, seems has to be that way due to a circular dependency
       AccessControl: LogDeliveryWrite
       BucketEncryption:
         ServerSideEncryptionConfiguration:
