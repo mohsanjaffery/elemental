@@ -61,3 +61,6 @@ Contributions are more than welcome. Please read the [contributing guidelines](C
 ## Limitations
 
 Lambda functions are hitting allowed limit of 64 characters. To resolve this, use stack name as short as possible. Tested with 3 characters `elm`.
+
+`CloudFrontAccessLogsBucket` bucket used for CloudFront logs has hardcoded value, this helps resolve circular dependency between `TransformPartFn` function and `CloudFrontAccessLogsBucket` resource. However, this can cause failures when trying to deploy solution repeatably in the same account.
+Resolution: [TODO] add ${AWS::StackID} pseudo parameter to the name.
