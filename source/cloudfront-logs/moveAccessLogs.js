@@ -9,7 +9,7 @@ const targetKeyPrefix = process.env.TARGET_KEY_PREFIX;
 // regex for filenames by Amazon CloudFront access logs. Groups:
 // - 1.	year
 // - 2.	month
-// - 3.	day 
+// - 3.	day
 // - 4.	hour
 const datePattern = '[^\\d](\\d{4})-(\\d{2})-(\\d{2})-(\\d{2})[^\\d]';
 const filenamePattern = '[^/]+$';

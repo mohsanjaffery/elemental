@@ -17,7 +17,7 @@ exports.handler = async (event, context, callback) => {
 
   var createPartitionStatement = `
     ALTER TABLE ${database}.${table}
-    ADD IF NOT EXISTS 
+    ADD IF NOT EXISTS
     PARTITION (
         year = '${year}',
         month = '${month}',

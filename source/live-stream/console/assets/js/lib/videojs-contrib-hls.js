@@ -17599,7 +17599,7 @@ module.exports = Stream;
 // see https://tools.ietf.org/html/rfc1808
 
 /* jshint ignore:start */
-(function(root) { 
+(function(root) {
 /* jshint ignore:end */
 
   var URL_REGEX = /^((?:[a-zA-Z0-9+\-.]+:)?)(\/\/[^\/\;?#]*)?(.*?)??(;.*?)?(\?.*?)?(#.*?)?$/;
