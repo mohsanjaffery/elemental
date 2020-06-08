@@ -28,4 +28,4 @@ repos:
       - id: cfn-python-lint
         name: AWS CloudFormation Linter
         files: \.(template)$
-        args: [--ignore-checks=W3002]
+        args: [--ignore-checks=W3002, --ignore-checks=W3011]
