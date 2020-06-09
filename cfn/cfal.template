@@ -15,11 +15,7 @@ Parameters:
 
   NewKeyPrefix:
     Type: String
-    Default: 'new/'
-    ConstraintDescription: '[A-Za-z0-9\-]+/'
-    Description: >
-      Prefix of new access log files that are written by Amazon CloudFront.
-      Including the trailing slash.
+
   GzKeyPrefix:
     Type: String
     Default: 'partitioned-gz/'
