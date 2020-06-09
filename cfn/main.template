@@ -195,6 +195,12 @@ Parameters:
     MaxLength: 20
     Description: Prefix that is used for the created resources (20 chars, a-z and 0-9 only)
 
+  CloudFrontLogsPrefix:
+    Type: String
+    Default: 'cloudfront-logs/'
+    ConstraintDescription: '[A-Za-z0-9\-]+/'
+    Description: Prefix of new access log files that are written by Amazon CloudFront. Including the trailing slash.
+
 Resources:
   LiveStreamStack:
     Type: AWS::CloudFormation::Stack
@@ -239,3 +245,4 @@ Resources:
       TimeoutInMinutes: 30
       Parameters:
         ResourcePrefix: !Ref ResourcePrefix
+        NewKeyPrefix: !Ref CloudFrontLogsPrefix
