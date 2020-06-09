@@ -2,6 +2,7 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: Elemental
 
 Metadata:
+  VERSION: 0.0.1
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -180,7 +181,7 @@ Parameters:
 
   MediaConnectOutputDestination:
     Type: String
-    Default: 192.0.2.0
+    Default: 192.1.0.1
 
   MediaConnectOutputPort:
     Type: String
