@@ -1,36 +1,34 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: >
-  Stack that deploys a bucket which you can use as a target for your
-  Amazon CloudFront access logs (use the prefix 'new/'). An event
-  notification is configured so that new objects created will fire an
-  AWS Lambda function that moves the objects to prefixes (under
-  'partitioned-gz/') that adhere to the Apache Hive partitioning format.
-  This way the data is easier to consume for big data tools (as Amazon
-  Athena and AWS Glue).
+Description: Stack that deploys a bucket which you can use as a target for your Amazon CloudFront access logs.
 
 Parameters:
-  ResourcePrefix:
-    Type: String
-
   NewKeyPrefix:
     Type: String
 
   GzKeyPrefix:
     Type: String
-    Default: 'partitioned-gz/'
-    ConstraintDescription: '[A-Za-z0-9\-]+/'
-    Description: >
-      Prefix of gzip'ed access log files that are moved to the Apache Hive
-      like style. Including the trailing slash.
+
   ParquetKeyPrefix:
     Type: String
-    Default: 'partitioned-parquet/'
-    ConstraintDescription: '[A-Za-z0-9\-]+/'
-    Description: >
-      Prefix of parquet files that are created in Apache Hive
-      like style by the CTAS query. Including the trailing slash.
+
 Resources:
+  CloudFrontAccessLogsBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      AccessControl: LogDeliveryWrite
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
   TransformPartFn:
     Type: AWS::Serverless::Function
     Properties:
@@ -50,12 +48,12 @@ Resources:
               Action:
                 - s3:ListBucket
                 - s3:GetBucketLocation
-              Resource: !Sub "arn:${AWS::Partition}:s3:::${ResourcePrefix}-${AWS::AccountId}-cf-access-logs"
+              Resource: '*'
             - Effect: Allow
               Action:
                 - s3:PutObject
                 - s3:GetObject
-              Resource: !Sub "arn:${AWS::Partition}:s3:::${ResourcePrefix}-${AWS::AccountId}-cf-access-logs/*"
+              Resource: '*'
             - Effect: Allow
               Action:
                 - glue:CreatePartition
@@ -73,12 +71,13 @@ Resources:
           SOURCE_TABLE: !Ref PartitionedGzTable
           TARGET_TABLE: !Ref PartitionedParquetTable
           DATABASE: !Ref CfLogsDatabase
-          ATHENA_QUERY_RESULTS_LOCATION: !Sub "s3://${ResourcePrefix}-${AWS::AccountId}-cf-access-logs/athena-query-results"
+          ATHENA_QUERY_RESULTS_LOCATION: !Sub "s3://${CloudFrontAccessLogsBucket}/athena-query-results"
       Events:
         HourlyEvt:
           Type: Schedule
           Properties:
             Schedule: cron(1 * * * ? *)
+
   CreatePartFn:
     Type: AWS::Serverless::Function
     Properties:
@@ -98,11 +97,11 @@ Resources:
               Action:
                 - s3:ListBucket
                 - s3:GetBucketLocation
-              Resource: !Sub "arn:${AWS::Partition}:s3:::${ResourcePrefix}-${AWS::AccountId}-cf-access-logs"
+              Resource: '*'
             - Effect: Allow
               Action:
                 - s3:PutObject
-              Resource: !Sub "arn:${AWS::Partition}:s3:::${ResourcePrefix}-${AWS::AccountId}-cf-access-logs/*"
+              Resource: '*'
             - Effect: Allow
               Action:
                 - glue:CreatePartition
@@ -114,12 +113,13 @@ Resources:
         Variables:
           TABLE: !Ref PartitionedGzTable
           DATABASE: !Ref CfLogsDatabase
-          ATHENA_QUERY_RESULTS_LOCATION: !Sub "s3://${ResourcePrefix}-${AWS::AccountId}-cf-access-logs/athena-query-results"
+          ATHENA_QUERY_RESULTS_LOCATION: !Sub "s3://${CloudFrontAccessLogsBucket}/athena-query-results"
       Events:
         HourlyEvt:
           Type: Schedule
           Properties:
             Schedule: cron(55 * * * ? *)
+
   MoveNewAccessLogsFn:
     Type: AWS::Serverless::Function
     Properties:
@@ -134,11 +134,11 @@ Resources:
               Action:
                 - s3:GetObject
                 - s3:DeleteObject
-              Resource: !Sub "arn:${AWS::Partition}:s3:::${ResourcePrefix}-${AWS::AccountId}-cf-access-logs/${NewKeyPrefix}*"
+              Resource: '*'
             - Effect: Allow
               Action:
                 - s3:PutObject
-              Resource: !Sub "arn:${AWS::Partition}:s3:::${ResourcePrefix}-${AWS::AccountId}-cf-access-logs/${GzKeyPrefix}*"
+              Resource: '*'
       Environment:
         Variables:
           TARGET_KEY_PREFIX: !Ref GzKeyPrefix
@@ -154,23 +154,6 @@ Resources:
                   - Name: prefix
                     Value: !Ref NewKeyPrefix
 
-  CloudFrontAccessLogsBucket:
-    Type: AWS::S3::Bucket
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      BucketName: !Sub "${ResourcePrefix}-${AWS::AccountId}-cf-access-logs" #TODO: hardcoded s3 bucket name, seems has to be that way due to a circular dependency
-      AccessControl: LogDeliveryWrite
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-
   # Glue Resources
   # - Database
   # - Partitioned Gzip Table
@@ -182,7 +165,8 @@ Resources:
     Properties:
       CatalogId: !Ref AWS::AccountId
       DatabaseInput:
-        Name: !Sub "${ResourcePrefix}_cf_access_logs_db"
+        Description: CloudFront access logs database
+
   PartitionedGzTable:
     Type: AWS::Glue::Table
     Properties:
@@ -272,7 +256,7 @@ Resources:
             - Name: sc_range_end
               Type: bigint
           InputFormat: org.apache.hadoop.mapred.TextInputFormat
-          Location: !Sub "s3://${ResourcePrefix}-${AWS::AccountId}-cf-access-logs/${GzKeyPrefix}"
+          Location: !Sub "s3://${CloudFrontAccessLogsBucket}/${GzKeyPrefix}"
           SerdeInfo:
             Parameters:
               field.delim": "\t"
@@ -367,7 +351,7 @@ Resources:
             - Name: sc_range_end
               Type: bigint
           InputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
-          Location: !Sub "s3://${ResourcePrefix}-${AWS::AccountId}-cf-access-logs/${ParquetKeyPrefix}"
+          Location: !Sub "s3://${CloudFrontAccessLogsBucket}/${ParquetKeyPrefix}"
           SerdeInfo:
             SerializationLibrary: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
   CombinedView:

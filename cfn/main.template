@@ -187,19 +187,23 @@ Parameters:
     Type: String
     Default: 12345
 
-  ResourcePrefix:
-    Type: String
-    Default: livestream
-    ConstraintDescription: '[a-z0-9]+/'
-    MinLength: 1
-    MaxLength: 20
-    Description: Prefix that is used for the created resources (20 chars, a-z and 0-9 only)
-
   CloudFrontLogsPrefix:
     Type: String
     Default: 'cloudfront-logs/'
     ConstraintDescription: '[A-Za-z0-9\-]+/'
     Description: Prefix of new access log files that are written by Amazon CloudFront. Including the trailing slash.
+
+  GzKeyPrefix:
+    Type: String
+    Default: 'partitioned-gz/'
+    ConstraintDescription: '[A-Za-z0-9\-]+/'
+    Description: Prefix of gzip'ed access log files that are moved to the Apache Hive like style. Including the trailing slash.
+
+  ParquetKeyPrefix:
+    Type: String
+    Default: 'partitioned-parquet/'
+    ConstraintDescription: '[A-Za-z0-9\-]+/'
+    Description: Prefix of parquet files that are created in Apache Hive like style by the CTAS query. Including the trailing slash.
 
 Resources:
   LiveStreamStack:
@@ -244,5 +248,6 @@ Resources:
       TemplateURL: cfal.template
       TimeoutInMinutes: 30
       Parameters:
-        ResourcePrefix: !Ref ResourcePrefix
         NewKeyPrefix: !Ref CloudFrontLogsPrefix
+        GzKeyPrefix: !Ref GzKeyPrefix
+        ParquetKeyPrefix: !Ref ParquetKeyPrefix
