@@ -12,6 +12,9 @@ Parameters:
   ParquetKeyPrefix:
     Type: String
 
+  GlueDbName:
+    Type: String
+
 Resources:
   CloudFrontAccessLogsBucket:
     Type: AWS::S3::Bucket
@@ -48,12 +51,12 @@ Resources:
               Action:
                 - s3:ListBucket
                 - s3:GetBucketLocation
-              Resource: '*'
+              Resource: !Sub "arn:${AWS::Partition}:s3:::${CloudFrontAccessLogsBucket}"
             - Effect: Allow
               Action:
                 - s3:PutObject
                 - s3:GetObject
-              Resource: '*'
+              Resource: !Sub "arn:${AWS::Partition}:s3:::${CloudFrontAccessLogsBucket}/*"
             - Effect: Allow
               Action:
                 - glue:CreatePartition
@@ -97,11 +100,11 @@ Resources:
               Action:
                 - s3:ListBucket
                 - s3:GetBucketLocation
-              Resource: '*'
+              Resource: !Sub "arn:${AWS::Partition}:s3:::${CloudFrontAccessLogsBucket}"
             - Effect: Allow
               Action:
                 - s3:PutObject
-              Resource: '*'
+              Resource: !Sub "arn:${AWS::Partition}:s3:::${CloudFrontAccessLogsBucket}/*"
             - Effect: Allow
               Action:
                 - glue:CreatePartition
@@ -134,11 +137,11 @@ Resources:
               Action:
                 - s3:GetObject
                 - s3:DeleteObject
-              Resource: '*'
+              Resource: '*' #!Sub "arn:${AWS::Partition}:s3:::${CloudFrontAccessLogsBucket}/${NewKeyPrefix}*" Creates circular dependency hence '*' is used instead
             - Effect: Allow
               Action:
                 - s3:PutObject
-              Resource: '*'
+              Resource: '*' #!Sub "arn:${AWS::Partition}:s3:::${CloudFrontAccessLogsBucket}/${GzKeyPrefix}*" Creates circular dependency hence '*' is used instead
       Environment:
         Variables:
           TARGET_KEY_PREFIX: !Ref GzKeyPrefix
@@ -165,6 +168,7 @@ Resources:
     Properties:
       CatalogId: !Ref AWS::AccountId
       DatabaseInput:
+        Name: !Ref GlueDbName
         Description: CloudFront access logs database
 
   PartitionedGzTable:
@@ -262,6 +266,7 @@ Resources:
               field.delim": "\t"
               serialization.format: "\t"
             SerializationLibrary: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
   PartitionedParquetTable:
     Type: AWS::Glue::Table
     Properties:
@@ -354,6 +359,7 @@ Resources:
           Location: !Sub "s3://${CloudFrontAccessLogsBucket}/${ParquetKeyPrefix}"
           SerdeInfo:
             SerializationLibrary: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+
   CombinedView:
     Type: AWS::Glue::Table
     Properties:

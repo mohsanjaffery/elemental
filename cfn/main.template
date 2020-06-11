@@ -205,6 +205,12 @@ Parameters:
     ConstraintDescription: '[A-Za-z0-9\-]+/'
     Description: Prefix of parquet files that are created in Apache Hive like style by the CTAS query. Including the trailing slash.
 
+  GlueDbName:
+    Type: String
+    Description: Glue database name
+    ConstraintDescription: '[a-z0-9\_]'
+    Default: livestream_cf_access_logs_db
+
 Resources:
   LiveStreamStack:
     Type: AWS::CloudFormation::Stack
@@ -251,3 +257,4 @@ Resources:
         NewKeyPrefix: !Ref CloudFrontLogsPrefix
         GzKeyPrefix: !Ref GzKeyPrefix
         ParquetKeyPrefix: !Ref ParquetKeyPrefix
+        GlueDbName: !Ref GlueDbName
