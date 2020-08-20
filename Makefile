@@ -25,7 +25,6 @@ init: venv
 
 # Build and deploy the project
 deploy:
-	make pre-deploy
 	make build-main
 	printf "\n--> Deploying %s template...\n" $(STACK_NAME)
 	aws cloudformation deploy \
