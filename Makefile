@@ -3,35 +3,25 @@ SHELL := /bin/bash
 .PHONY : help init deploy deploy-lsoa deploy-cfal test clean
 .DEFAULT: help
 
+# Check for .custom.mk file if exists
 CUSTOM_FILE ?= .custom.mk
 ifneq ("$(wildcard $(CUSTOM_FILE))","")
 	include $(CUSTOM_FILE)
+else
+$(error File `.custom.mk` doesnt exist, please create one.)
 endif
 
 help:
 	@echo "init 	generate project for local development"
 	@echo "deploy 	generate project and deploy stacks"
+	@echo "test		run pre-commit checks"
+	@echo "clean	delete virtualenv and installed libraries"
 
 # Install your dependencies and git hooks
 init: venv
+	venv/bin/pre-commit install
 	make build-lsoa
 	make build-media-connect
-	pre-commit install
-
-# Check for required parameters
-pre-deploy:
-ifndef REGION
-	$(error REGION is undefined)
-endif
-ifndef TEMP_BUCKET
-	$(error TEMP_BUCKET is undefined)
-endif
-ifndef TEMP_BUCKET
-	$(error PREFIX_NAME is undefined)
-endif
-ifndef STACK_NAME
-	$(error STACK_NAME is undefined)
-endif
 
 # Build and deploy the project
 deploy:
